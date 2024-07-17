@@ -1,0 +1,191 @@
+//Task 3 - LIBRARY MANAGEMENT SYSTEM
+
+#include <iostream>
+#include <string>
+
+using namespace std;
+
+const int MAX_BOOKS = 100;
+const int MAX_BORROWERS = 50;
+const int MAX_TRANSACTIONS = 200;
+
+struct Book {
+    string title;
+    string author;
+    string ISBN;
+    bool isAvailable;
+};
+
+struct Borrower {
+    string name;
+    int borrowerID;
+};
+
+struct Transaction {
+    int borrowerID;
+    string ISBN;
+    int dueDate;
+    bool isReturned;
+};
+
+Book books[MAX_BOOKS];
+Borrower borrowers[MAX_BORROWERS];
+Transaction transactions[MAX_TRANSACTIONS];
+
+int bookCount = 0;
+int borrowerCount = 0;
+int transactionCount = 0;
+
+void addBook() {
+    if (bookCount < MAX_BOOKS) {
+        cout << "Enter title: ";
+        cin.ignore();
+        getline(cin, books[bookCount].title);
+        cout << "Enter author: ";
+        getline(cin, books[bookCount].author);
+        cout << "Enter ISBN: ";
+        getline(cin, books[bookCount].ISBN);
+        books[bookCount].isAvailable = true;
+        bookCount++;
+        cout << "Book added successfully." << endl;
+    } else {
+        cout << "Book database is full." << endl;
+    }
+}
+
+void searchBook() {
+    string query;
+    cout << "Enter title, author, or ISBN to search: ";
+    cin.ignore();
+    getline(cin, query);
+
+    for (int i = 0; i < bookCount; i++) {
+        if (books[i].title == query || books[i].author == query || books[i].ISBN == query) {
+            cout << "Title: " << books[i].title << ", Author: " << books[i].author << ", ISBN: " << books[i].ISBN;
+            cout << ", Available: " << (books[i].isAvailable ? "Yes" : "No") << endl;
+        }
+    }
+}
+
+void checkoutBook() {
+    if (transactionCount < MAX_TRANSACTIONS) {
+        int borrowerID;
+        string ISBN;
+        cout << "Enter borrower ID: ";
+        cin >> borrowerID;
+        cout << "Enter ISBN of the book: ";
+        cin >> ISBN;
+
+        for (int i = 0; i < bookCount; i++) {
+            if (books[i].ISBN == ISBN && books[i].isAvailable) {
+                transactions[transactionCount].borrowerID = borrowerID;
+                transactions[transactionCount].ISBN = ISBN;
+                transactions[transactionCount].dueDate = 30;
+                transactions[transactionCount].isReturned = false;
+                books[i].isAvailable = false;
+                transactionCount++;
+                cout << "Book checked out successfully." << endl;
+                return;
+            }
+        }
+        cout << "Book not available." << endl;
+    } else {
+        cout << "Transaction database is full." << endl;
+    }
+}
+
+void returnBook() {
+    string ISBN;
+    cout << "Enter ISBN of the book: ";
+    cin >> ISBN;
+
+    for (int i = 0; i < transactionCount; i++) {
+        if (transactions[i].ISBN == ISBN && !transactions[i].isReturned) {
+            transactions[i].isReturned = true;
+            for (int j = 0; j < bookCount; j++) {
+                if (books[j].ISBN == ISBN) {
+                    books[j].isAvailable = true;
+                    cout << "Book returned successfully." << endl;
+                    return;
+                }
+            }
+        }
+    }
+    cout << "Book not found in transactions." << endl;
+}
+
+void calculateFine() {
+    int currentDate;
+    cout << "Enter current date: ";
+    cin >> currentDate;
+
+    for (int i = 0; i < transactionCount; i++) {
+        if (!transactions[i].isReturned && currentDate > transactions[i].dueDate) {
+            int overdueDays = currentDate - transactions[i].dueDate;
+            double fine = overdueDays * 0.5;
+            cout << "Borrower ID: " << transactions[i].borrowerID << ", ISBN: " << transactions[i].ISBN;
+            cout << ", Overdue days: " << overdueDays << ", Fine: $" << fine << endl;
+        }
+    }
+}
+
+void addBorrower() {
+    if (borrowerCount < MAX_BORROWERS) {
+        cout << "Enter borrower's name: ";
+        cin.ignore();
+        getline(cin, borrowers[borrowerCount].name);
+        borrowers[borrowerCount].borrowerID = borrowerCount + 1;
+        borrowerCount++;
+        cout << "Borrower added successfully with ID: " << borrowerCount << endl;
+    } else {
+        cout << "Borrower database is full." << endl;
+    }
+}
+
+void displayMenu() {
+    cout << "\nLibrary Management System" << endl;
+    cout << "1. Add Book" << endl;
+    cout << "2. Search Book" << endl;
+    cout << "3. Checkout Book" << endl;
+    cout << "4. Return Book" << endl;
+    cout << "5. Calculate Fine" << endl;
+    cout << "6. Add Borrower" << endl;
+    cout << "7. Exit" << endl;
+    cout << "Enter your choice: ";
+}
+
+int main() {
+    int choice;
+    while (true) {
+        displayMenu();
+        cin >> choice;
+
+        switch (choice) {
+            case 1:
+                addBook();
+                break;
+            case 2:
+                searchBook();
+                break;
+            case 3:
+                checkoutBook();
+                break;
+            case 4:
+                returnBook();
+                break;
+            case 5:
+                calculateFine();
+                break;
+            case 6:
+                addBorrower();
+                break;
+            case 7:
+                cout << "Exiting the program." << endl;
+                return 0;
+            default:
+                cout << "Invalid choice. Please try again." << endl;
+        }
+    }
+
+    return 0;
+}
